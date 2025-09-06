@@ -40,12 +40,16 @@ public class StorageImpl<K, V> implements Storage<K, V> {
 
     private int findIndexByKey(K key) {
         for (int i = 0; i < currentSize; i++) {
-            if (keyValuePairs[i].getKey().equals(key)) {
+            K currentKey = keyValuePairs[i].getKey();
+            if (currentKey == null && key == null) {
+                return i;
+            } else if (currentKey != null && currentKey.equals(key)) {
                 return i;
             }
         }
         return -1;
     }
+
 
     private static class Pair<K, V> {
         private final K key;
