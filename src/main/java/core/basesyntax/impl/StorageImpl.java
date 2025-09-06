@@ -3,41 +3,69 @@ package core.basesyntax.impl;
 import core.basesyntax.Storage;
 
 public class StorageImpl<K, V> implements Storage<K, V> {
+    private static final int MAX_STORAGE_CAPACITY = 10;
+    private final Pair<K, V>[] keyValuePairs;
+    private int currentSize;
 
-    private Object[] values = new Object[10];
-    private Object[] keys = new Object[10];
-    private int count = 0;
+    @SuppressWarnings("unchecked")
+    public StorageImpl() {
+        keyValuePairs = new Pair[MAX_STORAGE_CAPACITY];
+        currentSize = 0;
+    }
 
     @Override
     public void put(K key, V value) {
-        for (int i = 0; i < count; i++) {
-            if ((keys[i] == null && key == null) || (keys[i] != null && keys[i].equals(key))) {
-                values[i] = value;
-                return;
-            }
-        }
-
-        if (count < 10) {
-            keys[count] = key;
-            values[count] = value;
-            count++;
+        int index = findIndexByKey(key);
+        if (index != -1) {
+            keyValuePairs[index].setValue(value);
         } else {
-            throw new RuntimeException("Storage is full");
+            if (currentSize < MAX_STORAGE_CAPACITY) {
+                keyValuePairs[currentSize++] = new Pair<>(key, value);
+            } else {
+                throw new RuntimeException("Storage has reached maximum capacity");
+            }
         }
     }
 
     @Override
     public V get(K key) {
-        for (int i = 0; i < count; i++) {
-            if ((keys[i] == null && key == null) || (keys[i] != null && keys[i].equals(key))) {
-                return (V) values[i];
-            }
-        }
-        return null;
+        int index = findIndexByKey(key);
+        return index != -1 ? keyValuePairs[index].getValue() : null;
     }
 
     @Override
     public int size() {
-        return count;
+        return currentSize;
+    }
+
+    private int findIndexByKey(K key) {
+        for (int i = 0; i < currentSize; i++) {
+            if (keyValuePairs[i].getKey().equals(key)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static class Pair<K, V> {
+        private final K key;
+        private V value;
+
+        Pair(K key, V value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        K getKey() {
+            return key;
+        }
+
+        V getValue() {
+            return value;
+        }
+
+        void setValue(V value) {
+            this.value = value;
+        }
     }
 }
